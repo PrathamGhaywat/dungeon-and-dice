@@ -38,6 +38,49 @@ levels = [
     {"id": 30, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian dice"}
 ]
 
+class Player:
+    def __init__(self, name="Orpehus"):
+        self.name = name
+        self.max_hp = 30
+        self.hp = self.max_hp
+        self.armor = 0
+        self.crit_chance = 0.05 # well well well
+
+        self.rerolls = 1 
+        self.potions = {"healing": 2, "fortune": 1}
+        self.gold = 0
+        self.inventory = [] # if u want smthing, earn it lol
+
+        self.player_die = 6
+        self.status = {"burn": 0, "stun": 0, "freeze": 0}
+
+    def heal(self, amount):
+        self.hp = min(self.max_hp, self.hp + amount)
+        return self.hp
+    
+    def take_damage(self, amount):
+        reduced = max(0, amount - self.armor)
+        self.hp = max(0, self.hp - reduced)
+        return reduced
+    
+    def use_potion(self, potion):
+        if self.potions.get(potion, 0) > 0:
+            self.potions[potion] -= 1
+            if potion == "healing":
+                self.heal(10)
+            elif potion == "fortune":
+                # externally called lol
+                return "fortune_active"
+            return True
+        return False
+    def add_item(self, item):
+        self.inventory.append(item)
+
+    def is_alive(self):
+        return self.hp > 0
+    
+
+# GAME ON!!!
 init(autoreset=True)
 
 f = Figlet(font="digital")
