@@ -78,7 +78,56 @@ class Player:
 
     def is_alive(self):
         return self.hp > 0
-    
+
+
+# demotivation mechanism. u will never make the endddd!!!!!!!!!!
+WHISPERS = [
+    "Your luck fades mortal...",
+    "Fate favors the bold.",
+    "The dice rememebers every name.",
+    "Roll true, or die wondering.",
+    "Fortune flinches at your footstep...",
+    "Another soul, another roll.",
+    "Whispers twist the numbers in the deep.",
+    "You smell victory - keep rolling.",
+    "The shadows hunger for a bad throw.",
+    "A reroll costs more than a pride.",
+    "The Obsidian Dice glow in antcipation.",
+    "Even gods glance this way when you roll.",
+    "Luck is a jealous thing.",
+    "The deeper you go, the louder the dice.",
+    "The dungeon applauds a perfect roll."
+]
+
+def dungeon_whisper(victories=None, mood=None, delay=0.3):
+    """
+    Print a dungeon whisper.
+    - victories: optional int to add story-beat messages
+    - mood: 'taunt' | 'encourage' to bias selection
+    Returns the chosen message (useful for tests/logging).
+    """
+    msgs = WHISPERS.copy()
+    # add progression-based lines
+    if victories is not None:
+        if victories >= 10:
+            msgs.append("The Guardian watches. Hear its chuckle between rolls.")
+        elif victories >= 6:
+            msgs.append("A shadow watches you from the steps.")
+        elif victories >= 3:
+            msgs.append("You find a bloodstained note: 'Luck is a lie.'")
+
+    # simple mood biasing
+    if mood == 'encourage':
+        biased = [m for m in msgs if any(k in m.lower() for k in ('favor','victory','applaud','smell'))]
+        msgs = biased or msgs
+    elif mood == 'taunt':
+        biased = [m for m in msgs if any(k in m.lower() for k in ('fades','die','jealous','hunger','twist'))]
+        msgs = biased or msgs
+
+    msg = random.choice(msgs)
+    print(Style.DIM + Fore.YELLOW + msg)
+    time.sleep(delay)
+    return msg
 
 # GAME ON!!!
 init(autoreset=True)
