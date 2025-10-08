@@ -3,6 +3,7 @@ from colorama import init, Fore, Style
 import random
 import time
 import os
+import math
 
 # Predefined constants to  make u lose this game.
 levels = [
@@ -78,25 +79,131 @@ class Player:
 
     def is_alive(self):
         return self.hp > 0
+    
+def roll(sides=6, times=1, advantage=None):
+    """
+    Roll 'times' dice of 'sides'.advantage=None | 'adv' | 'dis
+    Returns single value (highest/lowest for advantage) for sum if times > 1
+    """
+    results = [random.randint(1, sides) for _ in range(times)]
+    if advantage == 'adv':
+        return max(results)
+    if advantage == 'dis':
+        return min(results)
+    return sum(results)
+class Enemy:
+    def __init__(self, name, hp, die = 6, special=None):
+        self.name = name
+        self.max_hp = hp
+        self.hp = hp
+        self.die = die
+        self.special = special or None
+        self.armor = 0
+    
+    def is_alive(self):
+        return self.hp > 0
 
+    def take_damage(self, amount):
+        reduced = max(0, amount - self.armor)
+        self.hp = max(0, self.hp - reduced)
+        return reduced
 
-# demotivation mechanism. u will never make the endddd!!!!!!!!!!
+    def attack_roll(self):
+        return random.randint(1, self.die)
+    
+def resolve_attack(attacker_is_player, atk_roll, def_roll, player_obj=None):
+    """
+    Simple resolution
+    -higher rolls deals damage equal to roll.
+    -player crit double dmage based on crit_chance.
+    """
+    if atk_roll > def_roll:
+        damage = atk_roll
+        if attacker_is_player and player_obj and random.random() < player_obj.crit_chance:
+            damage *= 2
+            return True, damage, "Critical Hit"
+        return True, damage, "Hit"
+    elif atk_roll < def_roll:
+        damage = def_roll
+        return False, damage, "Enemy hit"
+    else:
+        #tie
+        return None, 1, "Tie: glancing blows"
+
+def run_encounter(level_cfg, player_obj):
+    enemy = Enemy(level_cfg["monster"], level_cfg["hp"], die=level_cfg.get("enemy_die", 6), special=level_cfg.get("special"))
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print(Fore.MAGENTA + f"Level {level_cfg['id']}: {level_cfg['name']} — {enemy.name} appears!")
+    while player_obj.is_alive() and enemy.is_alive():
+        print(Fore.CYAN + f"\nPlayer HP: {player_obj.hp}/{player_obj.max_hp}  Enemy HP: {enemy.hp}/{enemy.max_hp}")
+        print("Actions: [r]oll attack  [p]otion  [d]efend  [q]uit")
+        choice = input("> ").strip().lower()
+        if choice == 'q':
+            print("You flee... save later.")
+            return False
+        if choice == 'p':
+            used = player_obj.use_potion("healing")
+            print("Used healing potion." if used else "No potions left.")
+            continue
+        if choice == 'd':
+            print("You brace for impact. (defend reduces next enemy damage)")
+            player_obj.armor += 2
+            eroll = enemy.attack_roll()
+            pr = roll(player_obj.player_die)
+            won, dmg, desc = resolve_attack(False, eroll, pr, player_obj)
+            dmg_done = player_obj.take_damage(dmg)
+            print(Fore.RED + f"Enemy rolled {eroll} and dealt {dmg_done} damage ({desc})")
+            player_obj.armor = max(0, player_obj.armor - 2)
+            continue
+        adv = 'adv' if enemy.special == 'advantage' else None
+        player_roll = roll(player_obj.player_die, advantage=adv)
+        enemy_roll = enemy.attack_roll()
+        res, dmg, desc = resolve_attack(True, player_roll, enemy_roll, player_obj)
+        if res is True:
+            dealt = enemy.take_damage(dmg)
+            print(Fore.GREEN + f"You rolled {player_roll} vs {enemy_roll} — {desc}. Enemy takes {dealt} damage.")
+        elif res is False:
+            taken = player_obj.take_damage(dmg)
+            print(Fore.RED + f"You rolled {player_roll} vs {enemy_roll} — {desc}. You take {taken} damage.")
+        else:
+            player_obj.take_damage(dmg)
+            enemy.take_damage(dmg)
+            print(Fore.YELLOW + f"Tie! Both take {dmg} damage.")
+
+    if player_obj.is_alive():
+        print(Fore.GREEN + f"You defeated the {enemy.name}!")
+        reward = level_cfg.get("reward")
+        if reward == "potion":
+            player_obj.potions["healing"] = player_obj.potions.get("healing", 0) + 1
+            print("Found a healing potion.")
+        elif reward == "reroll_token":
+            player_obj.rerolls += 1
+            print("Gained a reroll token.")
+        else:
+            if reward:
+                player_obj.add_item(reward)
+                print(f"Obtained {reward}.")
+        dungeon_whisper(victories=level_cfg["id"], mood='encourage')
+        return True
+    else:
+        print(Fore.RED + "You have fallen...")
+        dungeon_whisper(mood='taunt')
+        return False
+# Dungeon whispers for flavor text
 WHISPERS = [
-    "Your luck fades mortal...",
-    "Fate favors the bold.",
-    "The dice rememebers every name.",
-    "Roll true, or die wondering.",
-    "Fortune flinches at your footstep...",
-    "Another soul, another roll.",
-    "Whispers twist the numbers in the deep.",
-    "You smell victory - keep rolling.",
-    "The shadows hunger for a bad throw.",
-    "A reroll costs more than a pride.",
-    "The Obsidian Dice glow in antcipation.",
-    "Even gods glance this way when you roll.",
-    "Luck is a jealous thing.",
-    "The deeper you go, the louder the dice.",
-    "The dungeon applauds a perfect roll."
+    "A cold wind fades as you roll.",
+    "The dice twist in your palm.",
+    "You smell victory... or is it fear?",
+    "The dungeon hungers for another soul.",
+    "Luck favors the bold, or so they say.",
+    "A jealous echo applauds your roll.",
+    "The shadows seem to watch your every move.",
+    "You hear a faint whisper: 'Roll wisely.'",
+    "A distant laugh echoes after your defeat.",
+    "The air thickens as you grip the dice.",
+    "Your fate is sealed with every toss.",
+    "The walls seem to shift with your luck.",
+    "A voice murmurs: 'Fortune is fickle.'"
 ]
 
 def dungeon_whisper(victories=None, mood=None, delay=0.3):
@@ -125,7 +232,7 @@ def dungeon_whisper(victories=None, mood=None, delay=0.3):
         msgs = biased or msgs
 
     msg = random.choice(msgs)
-    print(Style.DIM + Fore.YELLOW + msg)
+    print(Style.NORMAL + Fore.YELLOW + str(msg))
     time.sleep(delay)
     return msg
 
@@ -151,3 +258,12 @@ Potions of Fortune: Rare brews that tilt - or twist - your odds.
 print(Fore.CYAN + prologue.strip())
 input(Fore.LIGHTGREEN_EX + "Press any key to continue...")
 os.system('cls' if os.name == 'nt' else 'clear')
+
+player = Player()
+for lvl in levels:
+    win = run_encounter(lvl, player)
+    if not win:
+        print(Fore.RED + "Game Over!")
+        break
+    input(Fore.LIGHTGREEN_EX + "Press Enter for the next floor...")
+    os.system('cls' if os.name == 'nt' else 'clear')
