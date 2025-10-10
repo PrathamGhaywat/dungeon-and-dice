@@ -6,9 +6,9 @@ Dungeon and dice is a cli game written in python. The core objective of the game
 Windows 11 x64 = ./dist/main.exe
 MacOS and Linux aswell as other os need to compile it themselves:
 
-`bash
+```bash
 git clone https://github.com/PrathamGhaywat/dungeon-and-dice.git
 pip install pyinstaller
 pyinstaller --onefile main.py
-`
+```
 
