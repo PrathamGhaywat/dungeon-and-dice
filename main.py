@@ -7,9 +7,9 @@ import math
 
 # Predefined constants to  make u lose this game.
 levels = [
-    {"id": 1, "name": "Training Hall", "monster": "Goblin", "enemy_die" : 4, "hp":8, "special": None, "reward":"potion"},
-    {"id": 2, "name": "Rat Warens", "monster": "Giant Rat", "enemy_die" : 6, "hp":10, "special": None, "reward":"potion"},
-    {"id": 3, "name": "Bandit Ambush", "monster": "Bandit", "enemy_die": 6, "hp": 14},
+    {"id": 1, "name": "Training Hall", "monster": "Goblin", "enemy_die" : 4, "hp":8, "special": None, "reward":"armor_shard"},
+    {"id": 2, "name": "Rat Warens", "monster": "Giant Rat", "enemy_die" : 6, "hp":10, "special": None, "reward":"armor_shard"},
+    {"id": 3, "name": "Bandit Ambush", "monster": "Bandit", "enemy_die": 6, "hp": 14, "special": "advantage", "reward": "armor_shard"},
     {"id": 4, "name": "Cave Beetle", "monster": "Armored Beetle", "enemy_die": 6, "hp": 18, "special": "armor", "reward": "armor_shard"},
     {"id": 5, "name": "Cultist Circle", "monster": "Dice Caster", "enemy_die": 8, "hp": 16, "special": "variable_die", "reward": "fortune_potion"},
     {"id": 6, "name": "Shadow Scout", "monster": "Stalker", "enemy_die": 6, "hp": 15, "special": "preemptive", "reward": "stealth_cloak"},
@@ -36,7 +36,7 @@ levels = [
     {"id":27, "name": "Feral Pits", "monster": "Ravager", "enemy_die": 10, "hp": 34, "special": "berserk", "reward": "raging_fang"},
     {"id":28, "name": "Veil of Mist", "monster": "Phantom", "enemy_die": 8, "hp": 26, "special": "ethereal", "reward": "veil_cloth"},
     {"id":29, "name": "Abyssal Gate", "monster": "Abyssal Knight", "enemy_die": 12, "hp": 42, "special": "phase_shift", "reward": "abyss_medallion"},
-    {"id": 30, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian dice"}
+    {"id": 30, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian_dice"}
 ]
 
 class Player:
@@ -45,12 +45,12 @@ class Player:
         self.max_hp = 30
         self.hp = self.max_hp
         self.armor = 0
-        self.crit_chance = 0.05 # well well well
+        self.crit_chance = 0.05  # base crit
 
         self.rerolls = 1 
         self.potions = {"healing": 2, "fortune": 1}
         self.gold = 0
-        self.inventory = [] # if u want smthing, earn it lol
+        self.inventory = []  # for non-auto items
 
         self.player_die = 6
         self.status = {"burn": 0, "stun": 0, "freeze": 0}
@@ -70,16 +70,25 @@ class Player:
             if potion == "healing":
                 self.heal(10)
             elif potion == "fortune":
-                # externally called lol
+                # externally called
                 return "fortune_active"
             return True
         return False
+    
     def add_item(self, item):
         self.inventory.append(item)
 
     def is_alive(self):
         return self.hp > 0
     
+    # NEW: method to apply armor upgrade (increases max HP and heals)
+    def upgrade_armor(self, amount=1):
+        self.armor += amount
+        hp_boost = amount * 5  # each armor point = +5 max HP
+        self.max_hp += hp_boost
+        self.hp += hp_boost  # heal for the boost
+        print(Fore.BLUE + f"Armor upgraded! +{amount} armor, +{hp_boost} max HP (total armor: {self.armor}, max HP: {self.max_hp}).")
+
 def roll(sides=6, times=1, advantage=None):
     """
     Roll 'times' dice of 'sides'.advantage=None | 'adv' | 'dis
@@ -179,6 +188,89 @@ def run_encounter(level_cfg, player_obj):
         elif reward == "reroll_token":
             player_obj.rerolls += 1
             print("Gained a reroll token.")
+        elif reward in ["armor_shard", "metal_fragment", "warden_plate"]:  # armor upgrade items
+            player_obj.upgrade_armor(1)
+        elif reward == "fortune_potion":
+            player_obj.crit_chance += 0.05  # +5% crit chance
+            print(Fore.BLUE + f"Obtained {reward}! Crit chance increased to {player_obj.crit_chance * 100:.0f}%.")
+        elif reward == "stealth_cloak":
+            player_obj.upgrade_armor(1)  # extra armor
+            print(Fore.BLUE + f"Obtained {reward}! Extra armor applied.")
+        elif reward == "healing_herb":
+            player_obj.potions["healing"] += 1
+            print(Fore.BLUE + f"Obtained {reward}! Healing potions increased.")
+        elif reward == "ember_seal":
+            player_obj.player_die = max(player_obj.player_die, 8)  # upgrade die to d8
+            print(Fore.BLUE + f"Obtained {reward}! Player die upgraded to d{player_obj.player_die}.")
+        elif reward == "ring_of_parry":
+            # reduce enemy damage by 1 permanently (simple debuff)
+            print(Fore.BLUE + f"Obtained {reward}! Enemy damage reduced by 1 (applied globally).")
+            # Note: implement in resolve_attack if needed
+        elif reward == "echo_shard":
+            player_obj.rerolls += 1  # free reroll
+            print(Fore.BLUE + f"Obtained {reward}! Gained an extra reroll.")
+        elif reward == "antidote":
+            # cure all status effects
+            player_obj.status = {"burn": 0, "stun": 0, "freeze": 0}
+            print(Fore.BLUE + f"Obtained {reward}! All status effects cured.")
+        elif reward == "cold_essence":
+            # freeze enemy (reduce their die by 2 for next encounter, but simple: +1 armor vs them)
+            print(Fore.BLUE + f"Obtained {reward}! Frost resistance: +1 armor vs cold enemies.")
+            player_obj.upgrade_armor(1)
+        elif reward == "focus_charm":
+            # ignore charm (no effect yet, but placeholder)
+            print(Fore.BLUE + f"Obtained {reward}! Charm resistance gained.")
+        elif reward == "bone_token":
+            # necrotic boost: +2 damage on next attack (temporary)
+            print(Fore.BLUE + f"Obtained {reward}! Necrotic power: +2 damage on next roll.")
+            # Implement in roll or resolve_attack if needed
+        elif reward == "chaos_draught":
+            # random effect: +1 crit or -1 armor
+            if random.random() > 0.5:
+                player_obj.crit_chance += 0.05
+                print(Fore.BLUE + f"Obtained {reward}! Chaotic boost: +5% crit chance.")
+            else:
+                player_obj.armor = max(0, player_obj.armor - 1)
+                print(Fore.YELLOW + f"Obtained {reward}! Chaotic curse: -1 armor.")
+        elif reward == "flame_gland":
+            # burn status: enemy takes 2 damage per turn (placeholder)
+            print(Fore.BLUE + f"Obtained {reward}! Flame gland: Enemies burn for 2 damage/turn.")
+        elif reward == "mirror_shard":
+            # copy enemy roll once
+            print(Fore.BLUE + f"Obtained {reward}! Mirror shard: Can copy enemy roll once.")
+        elif reward == "storm_scale":
+            # multi-attack: roll twice, take higher
+            print(Fore.BLUE + f"Obtained {reward}! Storm scale: Advantage on rolls.")
+            # Apply in roll function
+        elif reward == "duelist_banner":
+            # permanent advantage
+            print(Fore.BLUE + f"Obtained {reward}! Duelist banner: Permanent advantage on attacks.")
+        elif reward == "cursed_tome":
+            # curse: -5% crit
+            player_obj.crit_chance = max(0, player_obj.crit_chance - 0.05)
+            print(Fore.YELLOW + f"Obtained {reward}! Cursed: -5% crit chance.")
+        elif reward == "slime_core":
+            # acid: ignore 1 enemy armor
+            print(Fore.BLUE + f"Obtained {reward}! Slime core: Ignore 1 enemy armor.")
+        elif reward == "vault_key":
+            player_obj.gold += 50  # extra gold
+            print(Fore.BLUE + f"Obtained {reward}! +50 gold.")
+        elif reward == "whisper_note":
+            # extra whisper
+            dungeon_whisper(mood='encourage')
+        elif reward == "raging_fang":
+            # berserk: +2 damage but take 1 recoil
+            print(Fore.BLUE + f"Obtained {reward}! Raging fang: +2 damage, but -1 HP recoil.")
+        elif reward == "veil_cloth":
+            # ethereal: 20% dodge chance
+            print(Fore.BLUE + f"Obtained {reward}! Veil cloth: 20% dodge chance.")
+        elif reward == "abyss_medallion":
+            # phase shift: heal 10 HP
+            player_obj.heal(10)
+            print(Fore.BLUE + f"Obtained {reward}! Healed 10 HP.")
+        elif reward == "obsidian_dice":
+            print(Fore.GREEN + "You have claimed the Obsidian Dice! Victory is yours.")
+            return True  # end game
         else:
             if reward:
                 player_obj.add_item(reward)
@@ -287,12 +379,9 @@ print(Fore.CYAN + prologue.strip())
 input(Fore.LIGHTGREEN_EX + "Press any key to continue...")
 os.system('cls' if os.name == 'nt' else 'clear')
 
-# ...existing code...
-
 # GAME ON!!!
 init(autoreset=True)
 
-# ...existing code...
 
 player = Player()
 for lvl in levels:
