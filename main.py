@@ -7,36 +7,46 @@ import math
 
 # Predefined constants to  make u lose this game.
 levels = [
-    {"id": 1, "name": "Training Hall", "monster": "Goblin", "enemy_die" : 4, "hp":8, "special": None, "reward":"armor_shard"},
-    {"id": 2, "name": "Rat Warens", "monster": "Giant Rat", "enemy_die" : 6, "hp":10, "special": None, "reward":"armor_shard"},
+    {"id": 1, "name": "Training Hall", "monster": "Goblin", "enemy_die": 4, "hp": 8, "special": None, "reward": "armor_shard"},
+    {"id": 2, "name": "Rat Warrens", "monster": "Giant Rat", "enemy_die": 6, "hp": 10, "special": None, "reward": "armor_shard"},
     {"id": 3, "name": "Bandit Ambush", "monster": "Bandit", "enemy_die": 6, "hp": 14, "special": "advantage", "reward": "armor_shard"},
     {"id": 4, "name": "Cave Beetle", "monster": "Armored Beetle", "enemy_die": 6, "hp": 18, "special": "armor", "reward": "armor_shard"},
     {"id": 5, "name": "Cultist Circle", "monster": "Dice Caster", "enemy_die": 8, "hp": 16, "special": "variable_die", "reward": "fortune_potion"},
     {"id": 6, "name": "Shadow Scout", "monster": "Stalker", "enemy_die": 6, "hp": 15, "special": "preemptive", "reward": "stealth_cloak"},
-    {"id": 7, "name": "Ruinous Bridge", "monster": "Troll", "enemy_die": 8, "hp": 24, "special": "regenerate", "reward": "healing_herb"},
-    {"id": 8, "name": "Blighted Grove", "monster": "Elemental", "enemy_die": 8, "hp": 20, "special": "status_affect", "reward": "ember_seal"},
-    {"id": 9, "name": "Knight's Trial", "monster": "Champion Knight", "enemy_die": 8, "hp": 26, "special": "parry", "reward": "ring_of_parry"},
-    {"id":10, "name": "Hall of Echoes", "monster": "Echo Wraith", "enemy_die": 10, "hp": 22, "special": "mirror_roll", "reward": "echo_shard"},
-    {"id":11, "name": "Fungal Depths", "monster": "Mire Fungus", "enemy_die": 6, "hp": 18, "special": "poison_spore", "reward": "antidote"},
-    {"id":12, "name": "Ironworks", "monster": "Golem", "enemy_die":10, "hp": 30, "special": "heavy_armor", "reward": "metal_fragment"},
-    {"id":13, "name": "Frozen Hall", "monster": "Frost Warden", "enemy_die": 8, "hp": 22, "special": "freeze", "reward": "cold_essence"},
-    {"id":14, "name": "Siren's Hall", "monster": "Siren", "enemy_die": 6, "hp": 20, "special": "charm", "reward": "focus_charm"},
-    {"id":15, "name": "Graveyard Gate", "monster": "Bone Lord", "enemy_die": 10, "hp": 28, "special": "necrotic", "reward": "bone_token"},
-    {"id":16, "name": "Tower of Luck", "monster": "Fortune Sprite", "enemy_die": 4, "hp": 12, "special": "reroll_grant", "reward": "reroll_token"},
-    {"id":17, "name": "Mad Altar", "monster": "Chaos Priest", "enemy_die": 12, "hp": 26, "special": "swap_effects", "reward": "chaos_draught"},
-    {"id":18, "name": "Brimstone Pits", "monster": "Fire Hound", "enemy_die": 8, "hp": 24, "special": "burn", "reward": "flame_gland"},
-    {"id":19, "name": "Glass Maze", "monster": "Mirror Knight", "enemy_die": 10, "hp": 26, "special": "copy", "reward": "mirror_shard"},
-    {"id":20, "name": "Storm Gallery", "monster": "Tempest Drake", "enemy_die": 10, "hp": 32, "special": "multi_attack", "reward": "storm_scale"},
-    {"id":21, "name": "Hidden Arena", "monster": "Duelist", "enemy_die": 8, "hp": 28, "special": "skill_rolls", "reward": "duelist_banner"},
-    {"id":22, "name": "Cursed Library", "monster": "Librarian Shade", "enemy_die": 6, "hp": 20, "special": "curse", "reward": "cursed_tome"},
-    {"id":23, "name": "Broken Sewers", "monster": "Muck Leviathan", "enemy_die": 12, "hp": 36, "special": "acid", "reward": "slime_core"},
-    {"id":24, "name": "Sunken Vault", "monster": "Treasure Wight", "enemy_die": 10, "hp": 30, "special": "loot_steal", "reward": "vault_key"},
-    {"id":25, "name": "Warden's Keep", "monster": "Iron Warden", "enemy_die": 12, "hp": 38, "special": "stun_on_high", "reward": "warden_plate"},
-    {"id":26, "name": "Chamber of Whispers", "monster": "Whisperer", "enemy_die": 8, "hp": 24, "special": "voice_debuff", "reward": "whisper_note"},
-    {"id":27, "name": "Feral Pits", "monster": "Ravager", "enemy_die": 10, "hp": 34, "special": "berserk", "reward": "raging_fang"},
-    {"id":28, "name": "Veil of Mist", "monster": "Phantom", "enemy_die": 8, "hp": 26, "special": "ethereal", "reward": "veil_cloth"},
-    {"id":29, "name": "Abyssal Gate", "monster": "Abyssal Knight", "enemy_die": 12, "hp": 42, "special": "phase_shift", "reward": "abyss_medallion"},
-    {"id": 30, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian_dice"}
+    # Special level 7
+    {"id": 7, "name": "Void Nexus", "monster": "Void Sentinel", "enemy_die": 12, "hp": 100, "special": "void_absorb", "reward": "void_essence", "special_level": True},
+    {"id": 8, "name": "Ruinous Bridge", "monster": "Troll", "enemy_die": 8, "hp": 24, "special": "regenerate", "reward": "healing_herb"},
+    {"id": 9, "name": "Blighted Grove", "monster": "Elemental", "enemy_die": 8, "hp": 20, "special": "status_affect", "reward": "ember_seal"},
+    {"id": 10, "name": "Knight's Trial", "monster": "Champion Knight", "enemy_die": 8, "hp": 26, "special": "parry", "reward": "ring_of_parry"},
+    {"id": 11, "name": "Hall of Echoes", "monster": "Echo Wraith", "enemy_die": 10, "hp": 22, "special": "mirror_roll", "reward": "echo_shard"},
+    {"id": 12, "name": "Fungal Depths", "monster": "Mire Fungus", "enemy_die": 6, "hp": 18, "special": "poison_spore", "reward": "antidote"},
+    # Special level 13
+    {"id": 13, "name": "Eternal Flame", "monster": "Infernal Phoenix", "enemy_die": 12, "hp": 110, "special": "rebirth", "reward": "phoenix_feather", "special_level": True},
+    {"id": 14, "name": "Ironworks", "monster": "Golem", "enemy_die": 10, "hp": 30, "special": "heavy_armor", "reward": "metal_fragment"},
+    {"id": 15, "name": "Frozen Hall", "monster": "Frost Warden", "enemy_die": 8, "hp": 22, "special": "freeze", "reward": "cold_essence"},
+    {"id": 16, "name": "Siren's Hall", "monster": "Siren", "enemy_die": 6, "hp": 20, "special": "charm", "reward": "focus_charm"},
+    {"id": 17, "name": "Graveyard Gate", "monster": "Bone Lord", "enemy_die": 10, "hp": 28, "special": "necrotic", "reward": "bone_token"},
+    {"id": 18, "name": "Tower of Luck", "monster": "Fortune Sprite", "enemy_die": 4, "hp": 12, "special": "reroll_grant", "reward": "reroll_token"},
+    # Special level 19
+    {"id": 19, "name": "Crystal Cavern", "monster": "Crystal Colossus", "enemy_die": 12, "hp": 120, "special": "reflect", "reward": "crystal_heart", "special_level": True},
+    {"id": 20, "name": "Mad Altar", "monster": "Chaos Priest", "enemy_die": 12, "hp": 26, "special": "swap_effects", "reward": "chaos_draught"},
+    {"id": 21, "name": "Brimstone Pits", "monster": "Fire Hound", "enemy_die": 8, "hp": 24, "special": "burn", "reward": "flame_gland"},
+    {"id": 22, "name": "Glass Maze", "monster": "Mirror Knight", "enemy_die": 10, "hp": 26, "special": "copy", "reward": "mirror_shard"},
+    {"id": 23, "name": "Storm Gallery", "monster": "Tempest Drake", "enemy_die": 10, "hp": 32, "special": "multi_attack", "reward": "storm_scale"},
+    {"id": 24, "name": "Hidden Arena", "monster": "Duelist", "enemy_die": 8, "hp": 28, "special": "skill_rolls", "reward": "duelist_banner"},
+    # Special level 25
+    {"id": 25, "name": "Shadow Realm", "monster": "Shadow Overlord", "enemy_die": 12, "hp": 130, "special": "shadow_clone", "reward": "shadow_orb", "special_level": True},
+    {"id": 26, "name": "Cursed Library", "monster": "Librarian Shade", "enemy_die": 6, "hp": 20, "special": "curse", "reward": "cursed_tome"},
+    {"id": 27, "name": "Broken Sewers", "monster": "Muck Leviathan", "enemy_die": 12, "hp": 36, "special": "acid", "reward": "slime_core"},
+    {"id": 28, "name": "Sunken Vault", "monster": "Treasure Wight", "enemy_die": 10, "hp": 30, "special": "loot_steal", "reward": "vault_key"},
+    {"id": 29, "name": "Warden's Keep", "monster": "Iron Warden", "enemy_die": 12, "hp": 38, "special": "stun_on_high", "reward": "warden_plate"},
+    {"id": 30, "name": "Chamber of Whispers", "monster": "Whisperer", "enemy_die": 8, "hp": 24, "special": "voice_debuff", "reward": "whisper_note"},
+    # Special level 31
+    {"id": 31, "name": "Time Rift", "monster": "Chronos Beast", "enemy_die": 12, "hp": 140, "special": "time_rewind", "reward": "chrono_crystal", "special_level": True},
+    {"id": 32, "name": "Feral Pits", "monster": "Ravager", "enemy_die": 10, "hp": 34, "special": "berserk", "reward": "raging_fang"},
+    {"id": 33, "name": "Veil of Mist", "monster": "Phantom", "enemy_die": 8, "hp": 26, "special": "ethereal", "reward": "veil_cloth"},
+    {"id": 34, "name": "Abyssal Gate", "monster": "Abyssal Knight", "enemy_die": 12, "hp": 42, "special": "phase_shift", "reward": "abyss_medallion"},
+    {"id": 35, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian_dice"}
 ]
 
 class Player:
@@ -382,14 +392,29 @@ os.system('cls' if os.name == 'nt' else 'clear')
 # GAME ON!!!
 init(autoreset=True)
 
-
 player = Player()
-for lvl in levels:
+level_index = 0
+while level_index < len(levels):
+    lvl = levels[level_index]
     win = run_encounter(lvl, player)
     if not win:
-        print(Fore.RED + "Game Over!")
-        break
-    # show story beats / vignettes tied to progression
-    show_story_beat(lvl["id"])
-    input(Fore.LIGHTGREEN_EX + "Press Enter for the next floor...")
-    os.system('cls' if os.name == 'nt' else 'clear')
+        if lvl.get("special_level"):
+            # Special level failure: halve HP and continue
+            player.hp = player.hp // 2
+            print(Fore.YELLOW + f"Special level failed! HP halved to {player.hp}.")
+        else:
+            print(Fore.RED + "Game Over!")
+            break
+    else:
+        if lvl.get("special_level"):
+            # Special level win: skip next level and +20 HP
+            player.heal(20)
+            print(Fore.GREEN + "Special level conquered! Skipped next level and gained +20 HP.")
+            level_index += 1  # Skip next
+        # show story beats / vignettes tied to progression
+        show_story_beat(lvl["id"])
+        input(Fore.LIGHTGREEN_EX + "Press Enter for the next floor...")
+        os.system('cls' if os.name == 'nt' else 'clear')
+    level_index += 1
+
+print(Fore.GREEN + "Congratulations, you have completed the dungeon!")

@@ -12,3 +12,8 @@ pip install pyinstaller
 pyinstaller --onefile main.py
 ```
 
+# License
+It is listed under the MIT license so feel free to clone and jailbreak it!
+
+# Inspiration:
+My real inspo for this was the popuar pen and paper game dungeons and dragons which follow the principe of a gam master creating levels and so on. 
