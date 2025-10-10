@@ -9,7 +9,7 @@ import math
 levels = [
     {"id": 1, "name": "Training Hall", "monster": "Goblin", "enemy_die" : 4, "hp":8, "special": None, "reward":"potion"},
     {"id": 2, "name": "Rat Warens", "monster": "Giant Rat", "enemy_die" : 6, "hp":10, "special": None, "reward":"potion"},
-    {"id": 3, "name": "Bandit Ambush", "monster": "Bandit", "enemy_die": 6, "hp": 14, "special": "advantage", "reward": "choice"},
+    {"id": 3, "name": "Bandit Ambush", "monster": "Bandit", "enemy_die": 6, "hp": 14},
     {"id": 4, "name": "Cave Beetle", "monster": "Armored Beetle", "enemy_die": 6, "hp": 18, "special": "armor", "reward": "armor_shard"},
     {"id": 5, "name": "Cultist Circle", "monster": "Dice Caster", "enemy_die": 8, "hp": 16, "special": "variable_die", "reward": "fortune_potion"},
     {"id": 6, "name": "Shadow Scout", "monster": "Stalker", "enemy_die": 6, "hp": 15, "special": "preemptive", "reward": "stealth_cloak"},
@@ -136,7 +136,7 @@ def run_encounter(level_cfg, player_obj):
     print(Fore.MAGENTA + f"Level {level_cfg['id']}: {level_cfg['name']} — {enemy.name} appears!")
     while player_obj.is_alive() and enemy.is_alive():
         print(Fore.CYAN + f"\nPlayer HP: {player_obj.hp}/{player_obj.max_hp}  Enemy HP: {enemy.hp}/{enemy.max_hp}")
-        print("Actions: [r]oll attack  [p]otion  [d]efend  [q]uit")
+        print("Actions: [r]oll [a]ttack  [p]otion  [d]efend  [q]uit")
         choice = input("> ").strip().lower()
         if choice == 'q':
             print("You flee... save later.")
@@ -236,13 +236,41 @@ def dungeon_whisper(victories=None, mood=None, delay=0.3):
     time.sleep(delay)
     return msg
 
-# GAME ON!!!
-init(autoreset=True)
-
-f = Figlet(font="digital")
-hello = f.renderText("DUNGEON & DICE")
-
-print(Fore.GREEN + hello)
+# --- NEW: story beats and milestone vignettes ---
+STORY_BEATS = {
+    1: "The entrance groans shut behind you. The torches smell of old luck.",
+    3: "You find a bloodstained note: 'Luck is a lie. The dice choose who deserves to live.'",
+    6: "A shadowy figure lingers in the stairwell, watching your hands.",
+    9: "You pass an altar of rusted dice. Coins and names are nailed to it.",
+    12: "A child's lullaby echoes from deeper halls — you remember nothing of your past.",
+    15: "The air tastes metallic. You tighten your grip; something waits above.",
+    18: "Carvings on the wall show a face that looks suspiciously like yours.",
+    21: "You wake mid-roll in a pile of bones. The dice were still warm.",
+    24: "A voice whispers: 'The Obsidian Dice are closer than you think.'",
+    27: "You see the Guardian's sigil scorched into the floor ahead.",
+    30: "The Obsidian Dice hum in the dark. The final door breathes open."
+}
+def show_story_beat(victories):
+    """
+    Print a story beat for the given victory count, or a short vignette
+    for milestones. Returns the printed message or None.
+    """
+    msg = STORY_BEATS.get(victories)
+    if not msg:
+        # occasional small vignette every 5 levels
+        if victories % 5 == 0:
+            vignette = [
+                "The dungeon's whisper lingers as you move on.",
+                "You find a scrap of cloth — the pattern feels important.",
+                "Distant metal clanks like a clock counting down.",
+            ]
+            msg = random.choice(vignette)
+    if msg:
+        print(Style.BRIGHT + Fore.MAGENTA + msg)
+        # short thematic whisper after the beat
+        dungeon_whisper(victories=victories, mood='taunt' if victories % 2 == 1 else 'encourage', delay=0.2)
+        return msg
+    return None
 
 prologue = """
 Legends speak of the Obsidian Dice, relics forged by the gods of chance and fate.
@@ -259,11 +287,20 @@ print(Fore.CYAN + prologue.strip())
 input(Fore.LIGHTGREEN_EX + "Press any key to continue...")
 os.system('cls' if os.name == 'nt' else 'clear')
 
+# ...existing code...
+
+# GAME ON!!!
+init(autoreset=True)
+
+# ...existing code...
+
 player = Player()
 for lvl in levels:
     win = run_encounter(lvl, player)
     if not win:
         print(Fore.RED + "Game Over!")
         break
+    # show story beats / vignettes tied to progression
+    show_story_beat(lvl["id"])
     input(Fore.LIGHTGREEN_EX + "Press Enter for the next floor...")
     os.system('cls' if os.name == 'nt' else 'clear')
