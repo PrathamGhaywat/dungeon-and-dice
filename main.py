@@ -46,7 +46,9 @@ levels = [
     {"id": 32, "name": "Feral Pits", "monster": "Ravager", "enemy_die": 10, "hp": 34, "special": "berserk", "reward": "raging_fang"},
     {"id": 33, "name": "Veil of Mist", "monster": "Phantom", "enemy_die": 8, "hp": 26, "special": "ethereal", "reward": "veil_cloth"},
     {"id": 34, "name": "Abyssal Gate", "monster": "Abyssal Knight", "enemy_die": 12, "hp": 42, "special": "phase_shift", "reward": "abyss_medallion"},
-    {"id": 35, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian_dice"}
+    {"id": 35, "name": "Obsidian Sanctum", "monster": "Guardian of the Obsidian Dice", "enemy_die": 12, "hp": 80, "special": "phases", "reward": "obsidian_dice"},
+    # fun last level ig. Matches the terminalcraft theme...
+    {"id": 36, "name": "Terminal", "monster": "Commander Terminal", "enemy_die": 200, "hp": 100, "special":"knows every linux command and has been learning haskell since fire was invented!!!!!!!!"}
 ]
 
 class Player:
@@ -160,11 +162,11 @@ def run_encounter(level_cfg, player_obj):
         if choice == 'q':
             print("You flee... save later.")
             return False
-        if choice == 'p':
+        elif choice == 'p':
             used = player_obj.use_potion("healing")
             print("Used healing potion." if used else "No potions left.")
             continue
-        if choice == 'd':
+        elif choice == 'd':
             print("You brace for impact. (defend reduces next enemy damage)")
             player_obj.armor += 2
             eroll = enemy.attack_roll()
@@ -174,20 +176,26 @@ def run_encounter(level_cfg, player_obj):
             print(Fore.RED + f"Enemy rolled {eroll} and dealt {dmg_done} damage ({desc})")
             player_obj.armor = max(0, player_obj.armor - 2)
             continue
-        adv = 'adv' if enemy.special == 'advantage' else None
-        player_roll = roll(player_obj.player_die, advantage=adv)
-        enemy_roll = enemy.attack_roll()
-        res, dmg, desc = resolve_attack(True, player_roll, enemy_roll, player_obj)
-        if res is True:
-            dealt = enemy.take_damage(dmg)
-            print(Fore.GREEN + f"You rolled {player_roll} vs {enemy_roll} — {desc}. Enemy takes {dealt} damage.")
-        elif res is False:
-            taken = player_obj.take_damage(dmg)
-            print(Fore.RED + f"You rolled {player_roll} vs {enemy_roll} — {desc}. You take {taken} damage.")
+        elif choice in ('a', 'attack', 'r', 'roll'):
+            adv = 'adv' if enemy.special == 'advantage' else None
+            player_roll = roll(player_obj.player_die, advantage=adv)
+            enemy_roll = enemy.attack_roll()
+            res, dmg, desc = resolve_attack(True, player_roll, enemy_roll, player_obj)
+            if res is True:
+                dealt = enemy.take_damage(dmg)
+                print(Fore.GREEN + f"You rolled {player_roll} vs {enemy_roll} — {desc}. Enemy takes {dealt} damage.")
+            elif res is False:
+                taken = player_obj.take_damage(dmg)
+                print(Fore.RED + f"You rolled {player_roll} vs {enemy_roll} — {desc}. You take {taken} damage.")
+            else:
+                player_obj.take_damage(dmg)
+                enemy.take_damage(dmg)
+                print(Fore.YELLOW + f"Tie! Both take {dmg} damage.")
         else:
-            player_obj.take_damage(dmg)
-            enemy.take_damage(dmg)
-            print(Fore.YELLOW + f"Tie! Both take {dmg} damage.")
+            print(Fore.YELLOW + "Wrong option, adventurer.")
+            input("Press ENTER to retry...")
+            continue
+
 
     if player_obj.is_alive():
         print(Fore.GREEN + f"You defeated the {enemy.name}!")
@@ -386,7 +394,7 @@ The Dungeons Whisper: After  a voice taunts or encourages you.
 Potions of Fortune: Rare brews that tilt - or twist - your odds.
 """
 print(Fore.CYAN + prologue.strip())
-input(Fore.LIGHTGREEN_EX + "Press any key to continue...")
+input(Fore.LIGHTGREEN_EX + "Press ENTER to continue...")
 os.system('cls' if os.name == 'nt' else 'clear')
 
 # GAME ON!!!
@@ -417,4 +425,4 @@ while level_index < len(levels):
         os.system('cls' if os.name == 'nt' else 'clear')
     level_index += 1
 
-print(Fore.GREEN + "Congratulations, you have completed the dungeon!")
+print(Fore.GREEN + "Congratulations, you have completed the dungeon! Thanks for playing!")
